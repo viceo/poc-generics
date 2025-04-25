@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"poc-generics/scsi3"
 )
@@ -10,10 +9,17 @@ func main() {
 	// All Error will be caught here
 	defer errorTrap()
 
-	inquiry := scsi3.RunCmd[scsi3.CmdInquiry]()
+	inquiry, err := scsi3.RunCmd[scsi3.CmdInquiry]()
+	if err != nil {
+		fmt.Printf("returned error: %s", err)
+	}
 	fmt.Println(inquiry.InquiryProperty)
 
-	element := scsi3.RunCmd[scsi3.CmdElementStatus]()
+	element, err := scsi3.RunCmd[scsi3.CmdElementStatus]()
+	if err != nil {
+		fmt.Printf("returned error: %s\n", err)
+	}
+
 	// element.elementProperty  /* This is not possible.. it's a private property */
 	msg := element.SpecificCmdElementStatusFunction()
 	fmt.Println(msg)
@@ -29,21 +35,25 @@ func main() {
 	// Impossible to define as this type doesn't implement Runnable
 	// failed := scsi3.RunCmd[scsi3.AnyOtherStructNotACmd]()
 
-	_ = scsi3.RunCmd[scsi3.AnyOtherStructNotACmdWithRunnableInterface]()
+	_, err = scsi3.RunCmd[scsi3.AnyOtherStructNotACmdWithRunnableInterface]()
+	if err != nil {
+		fmt.Printf("returned error: %s\n", err)
+	}
 
+	_, err = scsi3.RunCmd[scsi3.CmdWithPanicError]()
+	if err != nil {
+		fmt.Printf("returned error: %s\n", err)
+	}
 }
 
 func errorTrap() {
 	if r := recover(); r != nil {
 		// Type assertion to convert the recovered value to an error
 		err, ok := r.(error)
-		if ok && errors.Is(err, scsi3.ErrUnkownCommand) {
-			// Handle the specific error
-			fmt.Println("Caught unknown command error")
-			// Add your error handling logic here
+		if ok {
+			fmt.Printf("recovered in main error trap(%t): %s\n", ok, err)
 		} else {
-			// Either not an error type or not the specific error we're looking for
-			fmt.Printf("Recovered from: %v\n", r)
+			fmt.Printf("recovered in main error trap(%t): %s\n", ok, err)
 		}
 	}
 }

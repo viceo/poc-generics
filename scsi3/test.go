@@ -32,11 +32,27 @@ func (cmd Cmd) GetSenseData() SenseData {
 	}
 }
 
+// Part of the error handling example
+type CmdWithPanicError struct{}
+
+// This will fail if defined in RunCmd call
+type AnyOtherStructNotACmd struct{}
+
+// It may exist other concrete types that implements Run() interface
+// but this will also fail because Type Assertion
+type AnyOtherStructNotACmdWithRunnableInterface struct{}
+
 // Each type has it's own parameters
 type CmdElementStatus struct {
 	Cmd
 	elementProperty string
 }
+
+// Each type can have it's own functions
+func (cmd CmdElementStatus) SpecificCmdElementStatusFunction() string {
+	return cmd.elementProperty
+}
+
 type CmdInquiry struct {
 	Cmd
 	InquiryProperty string
@@ -62,6 +78,15 @@ func NewCmdInquiry() CmdInquiry {
 	}
 }
 
+// Sentinel Error
+var ErrPanicCommand = errors.New("this will panic everytime... as an example")
+var ErrUnkownCommand = errors.New("unknown scsi v3 command")
+
+func NewCmdWithPanicError() CmdWithPanicError {
+	panic(ErrPanicCommand)
+	// return CmdWithPanicError{}
+}
+
 // Commands implements Runnable
 func (cmd CmdElementStatus) Run() {
 	/* Run Actual SCSI Command*/
@@ -72,43 +97,52 @@ func (cmd CmdInquiry) Run() {
 	fmt.Printf("Running CDB %x\n", cmd.cdb)
 }
 
-// Each type can have it's own functions
-func (cmd CmdElementStatus) SpecificCmdElementStatusFunction() string {
-	return cmd.elementProperty
-}
-
-// Sentinel Error
-var ErrUnkownCommand = errors.New("unknown scsi v3 command")
-
-// This will fail if defined in RunCmd call
-type AnyOtherStructNotACmd struct{}
-
-// It may exist other concrete types that implements Run() interface
-// but this will also fail because Type Assertion
-type AnyOtherStructNotACmdWithRunnableInterface struct{}
-
 func (AnyOtherStructNotACmdWithRunnableInterface) Run() {
 	/* Some other Run code.. but not a SCSI CMD */
 }
+func (CmdWithPanicError) Run() {
+	/* Some other Run code.. supposed to panic everytime */
+}
 
-func RunCmd[CMD Runnable]() CMD {
+func RunCmd[CMD Runnable]() (cmd CMD, cmderr error) {
+	// You can recover from any function... here as an example
+	// the ErrUnkownCommand will be recovered and sent back as an
+	// error
+	defer func() {
+		if r := recover(); r != nil {
+			// Type assertion to convert the recovered value to an error
+			err, ok := r.(error)
+			if ok && errors.Is(err, ErrUnkownCommand) {
+				// Handle the specific error
+				cmderr = err
+				return
+				// Add your error handling logic here
+			} else {
+				// Bubble up...
+				panic(err)
+			}
+		}
+	}()
 
 	// Create the appropriate type based on generic parameter
-	var cmd CMD
 	switch any(cmd).(type) {
 	case CmdInquiry:
-
 		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdInquiry()).(CMD)
 		cmd = concreteStruct
 	case CmdElementStatus:
-
 		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdElementStatus()).(CMD)
 		cmd = concreteStruct
+	case CmdWithPanicError:
+		concreteStruct := any(NewCmdWithPanicError()).(CMD)
+		cmd = concreteStruct
 	default:
+		// This error will bubble up to main to be handled
+		// https://go.dev/wiki/PanicAndRecover
 		panic(ErrUnkownCommand)
 	}
+
 	cmd.Run()
-	return cmd
+	return cmd, nil
 }
