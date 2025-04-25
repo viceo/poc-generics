@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"poc-generics/test1"
+	"poc-generics/scsi3"
 )
 
 func main() {
 
-	inquiry := test1.RunCmd[test1.CmdInquiry]()
+	inquiry := scsi3.RunCmd[scsi3.CmdInquiry]()
 	fmt.Println(inquiry.InquiryProperty)
 
-	element := test1.RunCmd[test1.CmdElementStatus]()
+	element := scsi3.RunCmd[scsi3.CmdElementStatus]()
 	msg := element.SpecificCmdElementStatusFunction()
 	fmt.Println(msg)
 }
