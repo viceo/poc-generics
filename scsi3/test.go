@@ -89,15 +89,15 @@ func RunCmd[CMD Runnable]() CMD {
 
 		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdInquiry()).(CMD)
-		concreteStruct.Run()
-		return concreteStruct
+		cmd = concreteStruct
 	case CmdElementStatus:
 
 		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdElementStatus()).(CMD)
-		concreteStruct.Run()
-		return concreteStruct
+		cmd = concreteStruct
 	default:
 		panic(ErrUnkownCommand)
 	}
+	cmd.Run()
+	return cmd
 }
