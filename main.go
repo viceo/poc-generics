@@ -16,5 +16,10 @@ func main() {
 	fmt.Println(msg)
 
 	senseData := element.GetSenseData()
-	fmt.Printf("Key %s, ASC: %s, ASCQ: %s\n", senseData.SenseKey, senseData.Asc, senseData.Ascq)
+	fmt.Printf("LengthL %d Key %s, ASC: %s, ASCQ: %s\n",
+		senseData.SenseLength,
+		senseData.SenseKey,
+		senseData.Asc,
+		senseData.Ascq,
+	)
 }
