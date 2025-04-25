@@ -65,11 +65,13 @@ func RunCmd[CMD Runnable]() CMD {
 	switch any(cmd).(type) {
 	case CmdInquiry:
 
+		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdInquiry()).(CMD)
 		concreteStruct.Run()
 		return concreteStruct
 	case CmdElementStatus:
 
+		// Use type assertion to figure out what to create
 		concreteStruct := any(NewCmdElementStatus()).(CMD)
 		concreteStruct.Run()
 		return concreteStruct
