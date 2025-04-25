@@ -11,6 +11,10 @@ func main() {
 	fmt.Println(inquiry.InquiryProperty)
 
 	element := scsi3.RunCmd[scsi3.CmdElementStatus]()
+	// element.elementProperty  /* This is not possible.. it's a private property */
 	msg := element.SpecificCmdElementStatusFunction()
 	fmt.Println(msg)
+
+	senseData := element.GetSenseData()
+	fmt.Printf("Key %s, ASC: %s, ASCQ: %s\n", senseData.SenseKey, senseData.Asc, senseData.Ascq)
 }

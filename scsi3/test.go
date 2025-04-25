@@ -7,7 +7,33 @@ import (
 
 // The base Command type and the interface required
 // for each command
-type Cmd struct{ cdb []byte }
+type Cmd struct {
+	cdb         []byte
+	senseBuffer []byte
+}
+
+type SenseData struct {
+	SenseLength uint8  `json:"senseLength"`
+	SenseKey    string `json:"senseKey"`
+	Asc         string `json:"asc"`
+	Ascq        string `json:"ascq"`
+}
+
+// Return the Sense Buffer
+func (cmd Cmd) GetSenseData() SenseData {
+	// Made up values... just as an example
+	// taken from senseBuffer
+
+	/* senseLength := cmd.senseBuffer[0] */
+	/* senseKey    := fmt.Sprintf("%02x", cmd.senseBuffer[1]) */
+	return SenseData{
+		SenseLength: 10,
+		SenseKey:    "70",
+		Asc:         "00",
+		Ascq:        "01",
+	}
+}
+
 type Runnable interface{ Run() }
 
 // Each type has it's own parameters
