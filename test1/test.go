@@ -1,5 +1,7 @@
 package test1
 
+import "errors"
+
 type SgIo struct {
 	cdb []byte
 }
@@ -46,9 +48,7 @@ func RunCmd[CMD IDescriptable]() CMD {
 			SgIo:            SgIo{cdb: cdb},
 			elementProperty: "default element value", // Set appropriate default or parameter
 		}).(CMD)
+	default:
+		panic(errors.New("unknown Command"))
 	}
-
-	// Create and return a zero value if no match
-	var zeroValue CMD
-	return zeroValue
 }
