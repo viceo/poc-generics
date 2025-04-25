@@ -80,6 +80,17 @@ func (cmd CmdElementStatus) SpecificCmdElementStatusFunction() string {
 // Sentinel Error
 var ErrUnkownCommand = errors.New("unknown scsi v3 command")
 
+// This will fail if defined in RunCmd call
+type AnyOtherStructNotACmd struct{}
+
+// It may exist other concrete types that implements Run() interface
+// but this will also fail because Type Assertion
+type AnyOtherStructNotACmdWithRunnableInterface struct{}
+
+func (AnyOtherStructNotACmdWithRunnableInterface) Run() {
+	/* Some other Run code.. but not a SCSI CMD */
+}
+
 func RunCmd[CMD Runnable]() CMD {
 
 	// Create the appropriate type based on generic parameter
